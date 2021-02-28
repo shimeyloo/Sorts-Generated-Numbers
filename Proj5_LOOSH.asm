@@ -14,8 +14,8 @@ INCLUDE Irvine32.inc
 
     ; constant values
 	LO = 10
-	HI = 30
-	COUNT = 200
+	HI = 99
+	ARRAYSIZE = 200
 
 
 .data
@@ -26,8 +26,9 @@ INCLUDE Irvine32.inc
 	                       "list sorted in ascending order, then displays the number of instances of each ", 13, 10,
                            "generated value, starting with the number of 10s.", 0
 	prompt_1	 	BYTE   "Your unsorted random numbers:", 0
-	randomArray     DWORD  COUNT DUP(?) 
-	sortedArray     DWORD  COUNT DUP(?) 
+	prompt_2	 	BYTE   "Your sorted random numbers:", 0
+	randomArray     DWORD  ARRAYSIZE DUP(?) 
+	prompt_3	 	BYTE   "The median value of the array: ", 0
 
 
 
@@ -39,22 +40,37 @@ main PROC
 	PUSH  OFFSET intro_2
 	CALL  introduction
 
-	; Calls fillArray, generate an array of COUNT random numbers
+	; Calls fillArray, generate an array of ARRAYSIZE random numbers
 	PUSH  OFFSET LO 
 	PUSH  OFFSET HI
-	PUSH  OFFSET COUNT
+	PUSH  OFFSET ARRAYSIZE
 	PUSH  OFFSET randomArray
 	CALL  fillArray 
 
 	; Calls displayList, displays unsorted random numbers
 	PUSH  OFFSET prompt_1
 	PUSH  OFFSET randomArray
-	PUSH  OFFSET COUNT
+	PUSH  OFFSET ARRAYSIZE
 	CALL  displayList
 
-	; Sorts array of numbers
+	; Calls sortList
 	PUSH  OFFSET randomArray
-	PUSH  OFFSET sortedArray
+	PUSH  OFFSET ARRAYSIZE
+	CALL  sortList
+
+	; Calls displayMedian 
+	PUSH  OFFSET ARRAYSIZE
+	PUSH  OFFSET prompt_3
+	PUSH  OFFSET randomArray
+	CALL  displayMedian
+
+	; Calls displaySortedList
+	PUSH  OFFSET prompt_2
+	PUSH  OFFSET randomArray
+	PUSH  OFFSET ARRAYSIZE
+	CALL  displayList
+
+	
 
 	Invoke ExitProcess,0	               ; exit to operating system
 main ENDP
@@ -86,14 +102,15 @@ fillArray PROC
 	MOV   EBP, ESP
 
 	; generates random number
-	MOV   ECX, [EBP + 12]                  ; COUNT
+	MOV   ECX, [EBP + 12]                  ; ARRAYSIZE
 	MOV   EDI, [EBP + 8]                   ; address of array in EDI 
     CALL  Randomize                        ; Sets seed
 	MOV   EBX, 0 
 _fillLoop: 
-	MOV   EAX, [EBP + 16]                  ; upper range 
+	MOV   EAX, [EBP + 16]                  ; upper range (HI)
+	ADD   EAX, 1
 	CALL  RandomRange 
-	CMP   EAX, 10                          ; checks if generated number is less than 10
+	CMP   EAX, [EBP + 20]                  ; checks if generated number is less than LO
 	JL    _fillLoop
 	MOV   [EDI], EAX                       ; adds new num to randomArray
 	ADD   EDI, 4 
@@ -104,7 +121,6 @@ _fillLoop:
 	MOV   [EBP + 8], EDI 
 	POP   EBP 
 	RET   16
-
 
 fillArray ENDP 
 
@@ -118,7 +134,7 @@ displayList PROC
 	CALL  CrLf
 
 	; Displays random unsorted list
-	MOV   EDX, [EBP + 8]                   ; COUNT
+	MOV   EDX, 1                   
 	MOV   ESI, [EBP + 12]                  ; randomArray
 	DEC   EDX 
 	MOV   EBX, 0
@@ -136,14 +152,101 @@ _continue:
 	MOV   AL,32
 	CALL  WriteChar
 	INC   EBX
-    DEC   EDX
-	CMP   EDX, 0
-	JGE   _showElement
+    INC   EDX
+	CMP   EDX, [EBP + 8]                   ; ARRAYSIZE
+	JL    _showElement
+	CALL  CrLf
+	CALL  CrLf
 	POP   EBP
-	RET   16
-
+	RET   12
 
 displayList ENDP 
+
+sortList PROC
+	PUSH  EBP
+	MOV   EBP, ESP
+
+	; Sort the array
+	MOV   ESI, [EBP + 12]             ; randomArray
+	MOV   ECX, [EBP + 8]              ; ARRAYSIZE
+	DEC   ECX
+	
+_outerLoop:
+	MOV   EDX, 0
+	DEC   ECX
+	PUSH  ECX
+	INC   ECX
+  _innerLoop: 
+	MOV   EAX, [ESI+EDX*4]            ; previous 
+	INC   EDX 
+	MOV   EBX, [ESI+EDX*4]            ; current 
+	CMP   EAX, EBX 
+	JG    _swap
+	JMP   _loop
+  _swap: 
+	MOV   [ESI+EDX*4], EAX
+	DEC   EDX
+	MOV   [ESI+EDX*4], EBX 
+	INC   EDX
+	JMP   _loop
+  _loop: 
+	LOOP  _innerLoop
+	POP   ECX  
+	CMP   ECX, 2
+	JG    _outerLoop  
+	POP   EBP 
+	RET   8
+
+sortList ENDP
+
+displayMedian PROC
+	PUSH  EBP
+	MOV   EBP, ESP
+
+	; Display text regarding median 
+	MOV   EDX, [EBP + 12]
+	CALL  WriteString
+
+	; Determin if the size of the array is even or odd
+	; By dividing the array size by 2 and looking if there is a remainder
+	MOV   EAX, [EBP + 16]                  ; ARRAYSIZE
+	MOV   EDX, 0
+    MOV   EBX, 2
+	DIV   EBX 
+	CMP   EDX, 0 
+	JE    _isEven
+	JMP   _displayResults
+_isEven: 
+	; Check to see if middle 2 values are the same
+	MOV   EDX, EAX 
+	DEC   EDX
+	MOV   EAX, [ESI+EDX*4]
+	INC   EDX
+	MOV   EBX, [ESI+EDX*4]
+	CMP   EAX, EBX
+	JE    _displayResults
+
+	; Add the middle 2 arrays and divide by 2
+	ADD   EAX, EBX 
+	MOV   EDX, 0 
+	MOV   EBX, 2
+	DIV   EBX 
+	CMP   EDX, 0
+	JNE   _roundUp
+	JMP   _displayResults
+_roundUp: 
+	INC   EAX 
+	JMP   _displayResults
+
+_displayResults: 
+	CALL  WriteDec 
+	CALL  CrLf
+	CALL  CrLf
+	POP   EBP 
+	RET   12
+
+displayMedian ENDP
+
 
 
 END main
