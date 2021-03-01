@@ -5,37 +5,48 @@ TITLE Generating Sorting Counting Random Integers    (RandomIntegers.asm)
 ; OSU email address: LOOSH@oregonstate.edu
 ; Course number/section:   CS271 Section 400
 ; Project Number: Project 5       Due Date:  February 28, 2021
-; Description: test
+; Description:
 
 
 INCLUDE Irvine32.inc
 
 ; (insert macro definitions here)
 
-    ; constant values
-	LO = 1
-	HI = 5
-	ARRAYSIZE = 5
+	LO = 10
+	HI = 99
+	ARRAYSIZE = 200
 	COUNTARRAYSIZE = HI - LO + 1
+	COUNTINSTANCES = HI - LO
 
 
 .data
 
     intro_1	 	    BYTE   "Generating, Sorting, and Counting Random integers! Programmed by Shimey Loo", 0
-	intro_2	 	    BYTE   "This program generates 200 random numbers in the range [10 ... 29], displays the", 13, 10,
+	intro_2	 	    BYTE   "This program generates a list of random numbers in a specific range, displays the", 13, 10,
                            "original list, sorts the list, displays the median value of the list, displays the ", 13, 10,
 	                       "list sorted in ascending order, then displays the number of instances of each ", 13, 10,
-                           "generated value, starting with the number of 10s.", 0
+                           "generated value, starting with the lowest number.", 0
 	prompt_1	 	BYTE   "Your unsorted random numbers:", 0
 	prompt_2	 	BYTE   "Your sorted random numbers:", 0
 	randomArray     DWORD  ARRAYSIZE DUP(?) 
 	prompt_3	 	BYTE   "The median value of the array: ", 0
 	prompt_4	 	BYTE   "Your list of instances of each generated number:", 0
+	prompt_5   	 	BYTE   "Goodbye, and thanks for using this program!", 0
 	countSize       DWORD  ?
-	countArray      DWORD  (HI - LO) DUP(?) 
-
+	countArray      DWORD  COUNTINSTANCES DUP(?) 
 
 .code
+
+; ---------------------------------------------------------------------------------
+; Name: main
+;
+; Consist of only procedure calls:
+;     introduction, fillArray, displayList, sortList, displayMedian, countList, farewell 
+;                 
+; Receives: 
+;     Data segment variables - intro_1, intro_2, LO, HI, ARRAYSIZE, randomArray, prompt_1, prompt_2, prompt_3, prompt_4
+;                              countArray, countSize, COUNTARRAYSIZE, goodbye
+; ---------------------------------------------------------------------------------
 main PROC
 	
 	; Calls introduction procedure, greets user and displays explanation of program
@@ -88,9 +99,28 @@ main PROC
 	PUSH  OFFSET COUNTARRAYSIZE
 	CALL  displayList
 
+	; Calls farewell
+	PUSH  OFFSET prompt_5
+	CALL  farewell
+
 	Invoke ExitProcess,0	               ; exit to operating system
 main ENDP
 
+; ---------------------------------------------------------------------------------
+; Name: introduction
+;
+; Introduces the name of the program and programmer and Displays a description of program functionality
+;
+; Preconditions: none
+;
+; Postconditions: changes registers EDX
+;                 
+; Receives: 
+;     [EBP + 12] =  intro_1    
+;     [EBP + 8]  =  intro_2
+;
+; returns: none
+; ---------------------------------------------------------------------------------
 introduction PROC
 
     ; Introduces the name of the program and programmer
@@ -113,6 +143,19 @@ introduction PROC
 
 introduction ENDP
 
+; ---------------------------------------------------------------------------------
+; Name: 
+;
+; Description HERE 
+;
+; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+;                 
+;
+; Receives: 
+;           
+;
+; returns: 
+; ---------------------------------------------------------------------------------
 fillArray PROC 
 	PUSH  EBP
 	MOV   EBP, ESP
@@ -120,7 +163,7 @@ fillArray PROC
 	; generates random number
 	MOV   ECX, [EBP + 12]                  ; ARRAYSIZE
 	MOV   EDI, [EBP + 8]                   ; address of array in EDI 
-    ;CALL  Randomize                        ; Sets seed
+    CALL  Randomize                        ; Sets seed
 	MOV   EBX, 0 
 _fillLoop: 
 	MOV   EAX, [EBP + 16]                  ; upper range (HI)
@@ -140,6 +183,19 @@ _fillLoop:
 
 fillArray ENDP 
 
+; ---------------------------------------------------------------------------------
+; Name: 
+;
+; Description HERE 
+;
+; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+;                 
+;
+; Receives: 
+;           
+;
+; returns: 
+; ---------------------------------------------------------------------------------
 displayList PROC 
 	PUSH  EBP
 	MOV   EBP, ESP
@@ -178,6 +234,19 @@ _continue:
 
 displayList ENDP 
 
+; ---------------------------------------------------------------------------------
+; Name: 
+;
+; Description HERE 
+;
+; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+;                 
+;
+; Receives: 
+;           
+;
+; returns: 
+; ---------------------------------------------------------------------------------
 sortList PROC
 	PUSH  EBP
 	MOV   EBP, ESP
@@ -185,17 +254,15 @@ sortList PROC
 	; Sort the array
 	MOV   ESI, [EBP + 12]             ; randomArray
 	MOV   ECX, [EBP + 8]              ; ARRAYSIZE
-	DEC   ECX
 	
 _outerLoop:
-	MOV   EDX, 0
 	DEC   ECX
-	PUSH  ECX
-	INC   ECX
+	PUSH  ECX                         ; position
+	MOV   EDX, 0
   _innerLoop: 
-	MOV   EAX, [ESI+EDX*4]            ; previous 
+	MOV   EAX, [ESI+EDX*4]            ; current 
 	INC   EDX 
-	MOV   EBX, [ESI+EDX*4]            ; current 
+	MOV   EBX, [ESI+EDX*4]            ; next
 	CMP   EAX, EBX 
 	JG    _exchange
 	JMP   _loop
@@ -211,12 +278,25 @@ _outerLoop:
 	LOOP  _innerLoop
 	POP   ECX  
 	CMP   ECX, 2
-	JG    _outerLoop  
+	JGE   _outerLoop  
 	POP   EBP 
 	RET   8
 
 sortList ENDP
 
+; ---------------------------------------------------------------------------------
+; Name: 
+;
+; Description HERE 
+;
+; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+;                 
+;
+; Receives: 
+;           
+;
+; returns: 
+; ---------------------------------------------------------------------------------
 exchangeElements PROC
 	PUSH  EBP
 	MOV   EBP, ESP
@@ -234,6 +314,19 @@ exchangeElements PROC
 	RET   16
 exchangeElements ENDP
 
+; ---------------------------------------------------------------------------------
+; Name: 
+;
+; Description HERE 
+;
+; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+;                 
+;
+; Receives: 
+;           
+;
+; returns: 
+; ---------------------------------------------------------------------------------
 displayMedian PROC
 	PUSH  EBP
 	MOV   EBP, ESP
@@ -250,7 +343,7 @@ displayMedian PROC
 	DIV   EBX 
 	CMP   EDX, 0 
 	JE    _isEven
-	JMP   _displayResults
+	JMP   _isOdd
 _isEven: 
 	; Check to see if middle 2 values are the same
 	MOV   EDX, EAX 
@@ -273,6 +366,10 @@ _roundUp:
 	INC   EAX 
 	JMP   _displayResults
 
+_isOdd: 
+	MOV   EDX, EAX
+	MOV   EAX, [ESI+EDX*4]
+
 _displayResults: 
 	CALL  WriteDec 
 	CALL  CrLf
@@ -282,6 +379,19 @@ _displayResults:
 
 displayMedian ENDP
 
+; ---------------------------------------------------------------------------------
+; Name: 
+;
+; Description HERE 
+;
+; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+;                 
+;
+; Receives: 
+;           
+;
+; returns: 
+; ---------------------------------------------------------------------------------
 countList PROC
 	PUSH  EBP
 	MOV   EBP, ESP
@@ -325,56 +435,24 @@ _recordCounter:
 
 countList ENDP
 
-countListPRAC PROC
+; ---------------------------------------------------------------------------------
+; Name: farewell
+;
+; Say goodbye by displaying a parting message 
+;
+; Receives:  
+;     [ebp+8] = prompt_5
+; ---------------------------------------------------------------------------------
+farewell PROC
 	PUSH  EBP
 	MOV   EBP, ESP
 
-	; Update countSize 
-	MOV   EBX, [EBP + 12]    ; low
-	MOV   EAX, [EBP + 8]     ; hi
-	SUB   EAX, EBX
-	MOV   [EBP + 16], EAX    ; save countSize
+	MOV   EDX, [EBP + 8]
+	CALL  WriteString
+	CALL  CrLf
 
-	; Count how many of each number there are
-	MOV   ESI, [EBP + 28]    ; randomArray
-	MOV   EDI, [EBP + 24]    ; countArray
-	MOV   EDX, 0             ; position
-
-_outerLoopCount: 
-	MOV   ECX, 1
-
-_innerLoopCount: 
-	MOV   EAX, [ESI+EDX*4]   ; current
-	INC   EDX
-	
-	; checks if it is the end
-	PUSH  ECX                
-	MOV   ECX, [EBP + 20]    ; ARRAYSIZE
-	CMP   ECX, EDX 
-	POP   ECX
-	JLE   _end 
-	JMP   _notEnd
-
-_notEnd: 
-; check if the next value is same/different from current value
-	MOV   EBX, [ESI+EDX*4]   ; next
-	CMP   EAX, EBX 
-	JE    _same
-	JMP   _different
-_same:
-	INC   ECX
-	JMP   _innerLoopCount
-
-_different: 
-	MOV   [EDI], ECX         ; adds new count to countArray
-	ADD   EDI, 4 
-	JMP   _outerLoopCount
-	
-_end: 
-	MOV   [EDI], ECX         ; adds last count to countArray
 	POP   EBP 
-	RET   
-
-countListPRAC ENDP
+	RET   4
+farewell ENDP
 
 END main
