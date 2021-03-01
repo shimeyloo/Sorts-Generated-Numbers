@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.28.29335.0	    02/28/21 19:15:09
+Microsoft (R) Macro Assembler Version 14.28.29335.0	    02/28/21 19:48:02
 <Generating Sorting Counting Random Integers    (RandomInteg  Page 1 - 1
 
 
@@ -153,17 +153,17 @@ Microsoft (R) Macro Assembler Version 14.28.29335.0	    02/28/21 19:15:09
 	   72 61 74 65 64
 	   20 6E 75 6D 62
 	   65 72 3A 00
- 00000521 47 6F 6F 64 62		prompt_5   	 	BYTE   "Goodbye, and thanks for using this program!", 0
-	   79 65 2C 20 61
-	   6E 64 20 74 68
-	   61 6E 6B 73 20
-	   66 6F 72 20 75
-	   73 69 6E 67 20
-	   74 68 69 73 20
-	   70 72 6F 67 72
-	   61 6D 21 00
- 0000054D 00000000			countSize       DWORD  ?
- 00000551  00000059 [			countArray      DWORD  COUNTINSTANCES DUP(?) 
+ 00000521 46 61 72 65 77		prompt_5   	 	BYTE   "Farewell, and thanks for using this program!", 0
+	   65 6C 6C 2C 20
+	   61 6E 64 20 74
+	   68 61 6E 6B 73
+	   20 66 6F 72 20
+	   75 73 69 6E 67
+	   20 74 68 69 73
+	   20 70 72 6F 67
+	   72 61 6D 21 00
+ 0000054E 00000000			countSize       DWORD  ?
+ 00000552  00000059 [			countArray      DWORD  COUNTINSTANCES DUP(?) 
 	    00000000
 	   ]
 
@@ -218,16 +218,16 @@ Microsoft (R) Macro Assembler Version 14.28.29335.0	    02/28/21 19:15:09
 
 					; Calls countList
  0000006D  68 000001B0 R		PUSH  OFFSET randomArray
- 00000072  68 00000551 R		PUSH  OFFSET countArray
+ 00000072  68 00000552 R		PUSH  OFFSET countArray
  00000077  68 000000C8			PUSH  OFFSET ARRAYSIZE
- 0000007C  68 0000054D R		PUSH  OFFSET countSize
+ 0000007C  68 0000054E R		PUSH  OFFSET countSize
  00000081  6A 0A			PUSH  OFFSET LO
  00000083  6A 63			PUSH  OFFSET HI
  00000085  E8 00000184			CALL  countList
 
 					; Calls displayList, displays instances of each generated number
  0000008A  68 000004F0 R		PUSH  OFFSET prompt_4
- 0000008F  68 00000551 R		PUSH  OFFSET countArray
+ 0000008F  68 00000552 R		PUSH  OFFSET countArray
  00000094  6A 5A			PUSH  OFFSET COUNTARRAYSIZE
  00000096  E8 00000070			CALL  displayList
 
@@ -249,7 +249,7 @@ Microsoft (R) Macro Assembler Version 14.28.29335.0	    02/28/21 19:15:09
 				;
 				; Postconditions: changes registers EDX
 				;                 
-				; Receives: 
+				; Receives: parameters: 
 				;     [EBP + 12] =  intro_1    
 				;     [EBP + 8]  =  intro_2
 				;
@@ -266,309 +266,168 @@ Microsoft (R) Macro Assembler Version 14.28.29335.0	    02/28/21 19:15:09
  000000B8  E8 00000000 E		CALL  CrLf
  000000BD  E8 00000000 E		CALL  CrLf
 
-					; Displays a description of program functionality
- 000000C2  8B 55 08			MOV   EDX, [EBP + 8]
- 000000C5  E8 00000000 E		CALL  WriteString
- 000000CA  E8 00000000 E		CALL  CrLf
- 000000CF  E8 00000000 E		CALL  CrLf
- 000000D4  5A				POP   EDX
- 000000D5  5D				POP   EBP
- 000000D6  C2 0008			RET   8
-
- 000000D9			introduction ENDP
-
-				; ---------------------------------------------------------------------------------
-				; Name: 
-				;
-				; Description HERE 
-				;
-				; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
-				;                 
-				;
-				; Receives: 
+					; Displays a description of program functionalier than the number to it's right, and swaps them
+ 000000C2  8B 55 08		;
+ 000000C5  E8 00000000 E	; Preconditions: the array is type DWORD.
+ 000000CA  E8 00000000 E	;
+ 000000CF  E8 00000000 E	; Postconditions: changes registers EAX, EBX, EDX, ESI
+ 000000D4  5A			;                 
+ 000000D5  5D			; Receives: parameters: 
+ 000000D6  C2 0008		;     [EBP + 8]   =   array
+				;     [EBP + 12]  =   position of value in the array
+ 000000D9			;     [EBP + 16]  =   larger number
+				;     [EBP + 16]  =   smaller number
 				;           
-				;
 				; returns: 
 				; ---------------------------------------------------------------------------------
- 000000D9			fillArray PROC 
- 000000D9  55				PUSH  EBP
- 000000DA  8B EC			MOV   EBP, ESP
+				exchangeElements PROC
+					PUSH  EBP
+					MOV   EBP, ESP
 
-					; generates random number
- 000000DC  8B 4D 0C			MOV   ECX, [EBP + 12]                  ; ARRAYSIZE
- 000000DF  8B 7D 08			MOV   EDI, [EBP + 8]                   ; address of array in EDI 
- 000000E2  E8 00000000 E	    CALL  Randomize                        ; Sets seed
- 000000E7  BB 00000000			MOV   EBX, 0 
- 000000EC			_fillLoop: 
- 000000EC  8B 45 10			MOV   EAX, [EBP + 16]                  ; upper range (HI)
- 000000EF  83 C0 01			ADD   EAX, 1
- 000000F2  E8 00000000 E		CALL  RandomRange 
- 000000F7  3B 45 14			CMP   EAX, [EBP + 20]                  ; checks if generated number is less than LO
- 000000FA  7C F0			JL    _fillLoop
- 000000FC  89 07			MOV   [EDI], EAX                       ; adds new num to randomArray
- 000000FE  83 C7 04			ADD   EDI, 4 
- 00000101  43				INC   EBX 
- 00000102  E2 E8			LOOP  _fillLoop
+					MOV   ESI, [EBP + 8]
+					MOV   EDX, [EBP + 12]
+					MOV   EBX, [EBP + 16]
+					MOV   EAX, [EBP + 20]
+					MOV   [ESI+EDX*4], EAX
+					DEC   EDX
+					MOV   [ESI+EDX*4], EBX 
+					INC   EDX
 
-					; saves list of random numbers 
- 00000104  89 7D 08			MOV   [EBP + 8], EDI 
- 00000107  5D				POP   EBP 
- 00000108  C2 0010			RET   16
-
- 0000010B			fillArray ENDP 
-
+					POP   EBP 
+ 000000D9				RET   16
+ 000000D9  55			exchangeElements ENDP
+ 000000DA  8B EC
 				; ---------------------------------------------------------------------------------
 				; Name: 
-				;
-				; Description HERE 
-				;
-				; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
-				;                 
-				;
-				; Receives: 
-				;           
-				;
+ 000000DC  8B 4D 0C		;
+ 000000DF  8B 7D 08		; Description HERE 
+ 000000E2  E8 00000000 E	;
+ 000000E7  BB 00000000		; Preconditions: the array is type DWORD.
+ 000000EC			;
+ 000000EC  8B 45 10		; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+ 000000EF  83 C0 01		;                 
+ 000000F2  E8 00000000 E	;
+ 000000F7  3B 45 14		; Receives: parameters: 
+ 000000FA  7C F0		;     [EBP + 8]   =   size of array
+ 000000FC  89 07		;     [EBP + 12]  =   array
+ 000000FE  83 C7 04		;     [EBP + 16]  =   display message regarding the array
+ 00000101  43			;           
+ 00000102  E2 E8		;
 				; returns: 
 				; ---------------------------------------------------------------------------------
- 0000010B			displayList PROC 
- 0000010B  55				PUSH  EBP
- 0000010C  8B EC			MOV   EBP, ESP
+ 00000104  89 7D 08		displayMedian PROC
+ 00000107  5D				PUSH  EBP
+ 00000108  C2 0010			MOV   EBP, ESP
 
-					; Display text regarding list
- 0000010E  8B 55 10			MOV   EDX, [EBP + 16]
- 00000111  E8 00000000 E		CALL  WriteString
- 00000116  E8 00000000 E		CALL  CrLf
-
-					; Displays list 
- 0000011B  8B 75 0C			MOV   ESI, [EBP + 12]                  ; randomArray
- 0000011E  BA 00000001			MOV   EDX, 1   
- 00000123  4A				DEC   EDX 
- 00000124  BB 00000000			MOV   EBX, 0
- 00000129			_showElement:
- 00000129  8B C3			MOV   EAX, EBX 
- 0000012B  83 F8 14			CMP   EAX, 20
- 0000012E  7D 02			JGE   _twentyPerLine               
- 00000130  EB 0A			JMP   _continue
- 00000132			_twentyPerLine: 
- 00000132  E8 00000000 E		CALL  CrLf                             ; creates a new line when 20 values have been displayed 
- 00000137  BB 00000000			MOV   EBX, 0
- 0000013C			_continue:
- 0000013C  8B 04 96			MOV   EAX,[ESI+EDX*4]          
- 0000013F  E8 00000000 E		CALL  WriteDec                 
- 00000144  B0 20			MOV   AL,32
- 00000146  E8 00000000 E		CALL  WriteChar
- 0000014B  43				INC   EBX
- 0000014C  42			    INC   EDX
- 0000014D  3B 55 08			CMP   EDX, [EBP + 8]                   ; ARRAYSIZE
- 00000150  7C D7			JL    _showElement
- 00000152  E8 00000000 E		CALL  CrLf
- 00000157  E8 00000000 E		CALL  CrLf
- 0000015C  5D				POP   EBP
- 0000015D  C2 000C			RET   12
-
- 00000160			displayList ENDP 
-
-				; ---------------------------------------------------------------------------------
-				; Name: 
-				;
-				; Description HERE 
-				;
-				; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
-				;                 
-				;
-				; Receives: 
-				;           
-				;
-				; returns: 
-				; ---------------------------------------------------------------------------------
- 00000160			sortList PROC
- 00000160  55				PUSH  EBP
- 00000161  8B EC			MOV   EBP, ESP
-
-					; Sort the array
- 00000163  8B 75 0C			MOV   ESI, [EBP + 12]             ; randomArray
- 00000166  8B 4D 08			MOV   ECX, [EBP + 8]              ; ARRAYSIZE
-					
- 00000169			_outerLoop:
- 00000169  49				DEC   ECX
- 0000016A  51				PUSH  ECX                         ; position
- 0000016B  BA 00000000			MOV   EDX, 0
- 00000170			  _innerLoop: 
- 00000170  8B 04 96			MOV   EAX, [ESI+EDX*4]            ; current 
- 00000173  42				INC   EDX 
- 00000174  8B 1C 96			MOV   EBX, [ESI+EDX*4]            ; next
- 00000177  3B C3			CMP   EAX, EBX 
- 00000179  7F 02			JG    _exchange
- 0000017B  EB 0B			JMP   _loop
- 0000017D			  _exchange: 
-					; call exchangeElements
- 0000017D  50				PUSH  EAX
- 0000017E  53				PUSH  EBX
- 0000017F  52				PUSH  EDX 
- 00000180  56				PUSH  ESI
- 00000181  E8 0000000E			CALL  exchangeElements
- 00000186  EB 00			JMP   _loop
- 00000188			  _loop: 
- 00000188  E2 E6			LOOP  _innerLoop
- 0000018A  59				POP   ECX  
- 0000018B  83 F9 02			CMP   ECX, 2
- 0000018E  7D D9			JGE   _outerLoop  
- 00000190  5D				POP   EBP 
- 00000191  C2 0008			RET   8
-
- 00000194			sortList ENDP
-
-				; ---------------------------------------------------------------------------------
-				; Name: 
-				;
-				; Description HERE 
-				;
-				; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
-				;                 
-				;
-				; Receives: 
-				;           
-				;
-				; returns: 
-				; ---------------------------------------------------------------------------------
- 00000194			exchangeElements PROC
- 00000194  55				PUSH  EBP
- 00000195  8B EC			MOV   EBP, ESP
-
- 00000197  8B 75 08			MOV   ESI, [EBP + 8]
- 0000019A  8B 55 0C			MOV   EDX, [EBP + 12]
- 0000019D  8B 5D 10			MOV   EBX, [EBP + 16]
- 000001A0  8B 45 14			MOV   EAX, [EBP + 20]
- 000001A3  89 04 96			MOV   [ESI+EDX*4], EAX
- 000001A6  4A				DEC   EDX
- 000001A7  89 1C 96			MOV   [ESI+EDX*4], EBX 
- 000001AA  42				INC   EDX
-
- 000001AB  5D				POP   EBP 
- 000001AC  C2 0010			RET   16
- 000001AF			exchangeElements ENDP
-
-				; ---------------------------------------------------------------------------------
-				; Name: 
-				;
-				; Description HERE 
-				;
-				; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
-				;                 
-				;
-				; Receives: 
-				;           
-				;
-				; returns: 
-				; ---------------------------------------------------------------------------------
- 000001AF			displayMedian PROC
- 000001AF  55				PUSH  EBP
- 000001B0  8B EC			MOV   EBP, ESP
-
-					; Display text regarding median 
- 000001B2  8B 55 0C			MOV   EDX, [EBP + 12]
- 000001B5  E8 00000000 E		CALL  WriteString
+ 0000010B				; Display text regarding median 
+					MOV   EDX, [EBP + 12]
+					CALL  WriteString
 
 					; Determin if the size of the array is even or odd
 					; By dividing the array size by 2 and looking if there is a remainder
- 000001BA  8B 45 10			MOV   EAX, [EBP + 16]                  ; ARRAYSIZE
- 000001BD  BA 00000000			MOV   EDX, 0
- 000001C2  BB 00000002		    MOV   EBX, 2
- 000001C7  F7 F3			DIV   EBX 
- 000001C9  83 FA 00			CMP   EDX, 0 
- 000001CC  74 02			JE    _isEven
- 000001CE  EB 26			JMP   _isOdd
- 000001D0			_isEven: 
+					MOV   EAX, [EBP + 16]                  ; ARRAYSIZE
+					MOV   EDX, 0
+				    MOV   EBX, 2
+					DIV   EBX 
+					CMP   EDX, 0 
+					JE    _isEven
+					JMP   _isOdd
+				_isEven: 
 					; Check to see if middle 2 values are the same
- 000001D0  8B D0			MOV   EDX, EAX 
- 000001D2  4A				DEC   EDX
- 000001D3  8B 04 96			MOV   EAX, [ESI+EDX*4]
- 000001D6  42				INC   EDX
- 000001D7  8B 1C 96			MOV   EBX, [ESI+EDX*4]
- 000001DA  3B C3			CMP   EAX, EBX
- 000001DC  74 1D			JE    _displayResults
+					MOV   EDX, EAX 
+					DEC   EDX
+					MOV   EAX, [ESI+EDX*4]
+ 0000010B				INC   EDX
+ 0000010B  55				MOV   EBX, [ESI+EDX*4]
+ 0000010C  8B EC			CMP   EAX, EBX
+					JE    _displayResults
 
-					; Add the middle 2 arrays and divide by 2
- 000001DE  03 C3			ADD   EAX, EBX 
- 000001E0  BA 00000000			MOV   EDX, 0 
- 000001E5  BB 00000002			MOV   EBX, 2
- 000001EA  F7 F3			DIV   EBX 
- 000001EC  83 FA 00			CMP   EDX, 0
- 000001EF  75 02			JNE   _roundUp
- 000001F1  EB 08			JMP   _displayResults
- 000001F3			_roundUp: 
- 000001F3  40				INC   EAX 
- 000001F4  EB 05			JMP   _displayResults
-
- 000001F6			_isOdd: 
- 000001F6  8B D0			MOV   EDX, EAX
- 000001F8  8B 04 96			MOV   EAX, [ESI+EDX*4]
-
- 000001FB			_displayResults: 
- 000001FB  E8 00000000 E		CALL  WriteDec 
- 00000200  E8 00000000 E		CALL  CrLf
- 00000205  E8 00000000 E		CALL  CrLf
- 0000020A  5D				POP   EBP 
- 0000020B  C2 000C			RET   12
-
- 0000020E			displayMedian ENDP
-
-				; ---------------------------------------------------------------------------------
-				; Name: 
-				;
-				; Description HERE 
-				;
+ 0000010E  8B 55 10			; Add the middle 2 arrays and divide by 2
+ 00000111  E8 00000000 E		ADD   EAX, EBX 
+ 00000116  E8 00000000 E		MOV   EDX, 0 
+					MOV   EBX, 2
+					DIV   EBX 
+ 0000011B  8B 75 0C			CMP   EDX, 0
+ 0000011E  BA 00000001			JNE   _roundUp
+ 00000123  4A				JMP   _displayResults
+ 00000124  BB 00000000		_roundUp: 
+ 00000129				INC   EAX 
+ 00000129  8B C3			JMP   _displayResults
+ 0000012B  83 F8 14
+ 0000012E  7D 02		_isOdd: 
+ 00000130  EB 0A			MOV   EDX, EAX
+ 00000132				MOV   EAX, [ESI+EDX*4]
+ 00000132  E8 00000000 E
+ 00000137  BB 00000000		_displayResults: 
+ 0000013C				CALL  WriteDec 
+ 0000013C  8B 04 96			CALL  CrLf
+ 0000013F  E8 00000000 E		CALL  CrLf
+ 00000144  B0 20			POP   EBP 
+ 00000146  E8 00000000 E		RET   12
+ 0000014B  43
+ 0000014C  42			displayMedian ENDP
+ 0000014D  3B 55 08
+ 00000150  7C D7		; ---------------------------------------------------------------------------------
+ 00000152  E8 00000000 E	; Name: 
+ 00000157  E8 00000000 E	;
+ 0000015C  5D			; Description HERE 
+ 0000015D  C2 000C		;
+				; Preconditions: the array is type DWORD.
+ 00000160			;
 				; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
 				;                 
 				;
-				; Receives: 
+				; Receives: parameters: 
+				;     [EBP + 8]   =   size of array
+				;     [EBP + 12]  =   array
+				;     [EBP + 16]  =   display message regarding the array
 				;           
 				;
 				; returns: 
 				; ---------------------------------------------------------------------------------
- 0000020E			countList PROC
- 0000020E  55				PUSH  EBP
- 0000020F  8B EC			MOV   EBP, ESP
+				countList PROC
+					PUSH  EBP
+					MOV   EBP, ESP
 
 					; Update countSize 
- 00000211  8B 5D 0C			MOV   EBX, [EBP + 12]    ; low
- 00000214  8B 45 08			MOV   EAX, [EBP + 8]     ; hi
- 00000217  2B C3			SUB   EAX, EBX
- 00000219  89 45 10			MOV   [EBP + 16], EAX    ; save countSize
+ 00000160				MOV   EBX, [EBP + 12]    ; low
+ 00000160  55				MOV   EAX, [EBP + 8]     ; hi
+ 00000161  8B EC			SUB   EAX, EBX
+					MOV   [EBP + 16], EAX    ; save countSize
 
-					; Count how many of each number there are
- 0000021C  8B 75 1C			MOV   ESI, [EBP + 28]    ; randomArray
- 0000021F  8B 7D 18			MOV   EDI, [EBP + 24]    ; countArray
- 00000222  8B 45 0C			MOV   EAX, [EBP + 12]    ; lo 
- 00000225  8B 4D 14			MOV   ECX, [EBP + 20]    ; ARRAYSIZE
- 00000228  BB 00000000			MOV   EBX, 0             ; occurance counter 
-
- 0000022D			_LoopCount:  
- 0000022D  3B 06			CMP   EAX, [ESI]
- 0000022F  74 02			JE    _addOne
- 00000231  EB 01			JMP   _magical
- 00000233			_addOne:
- 00000233  43				INC   EBX 
- 00000234			_magical: 
- 00000234  83 C6 04			ADD   ESI, 4
- 00000237  E2 F4			LOOP  _LoopCount
- 00000239  EB 00			JMP   _recordCounter
-
- 0000023B			_recordCounter:
- 0000023B  89 1F			MOV   [EDI], EBX         ; adds new count to countArray
- 0000023D  8B 75 1C			MOV   ESI, [EBP + 28]    ; randomArray
- 00000240  83 C7 04			ADD   EDI, 4 
- 00000243  40				INC   EAX
- 00000244  8B 4D 14			MOV   ECX, [EBP + 20]    ; ARRAYSIZE
- 00000247  BB 00000000			MOV   EBX, 0 
- 0000024C  3B 45 08			CMP   EAX, [EBP + 8]
- 0000024F  7E DC			JLE   _LoopCount
-
- 00000251  5D				POP   EBP 
- 00000252  C2 0018			RET   24
-
- 00000255			countList ENDP
-
+ 00000163  8B 75 0C			; Count how many of each number there are
+ 00000166  8B 4D 08			MOV   ESI, [EBP + 28]    ; randomArray
+					MOV   EDI, [EBP + 24]    ; countArray
+ 00000169				MOV   EAX, [EBP + 12]    ; lo 
+ 00000169  49				MOV   ECX, [EBP + 20]    ; ARRAYSIZE
+ 0000016A  51				MOV   EBX, 0             ; occurance counter 
+ 0000016B  BA 00000000
+ 00000170			_LoopCount:  
+ 00000170  8B 04 96			CMP   EAX, [ESI]
+ 00000173  42				JE    _addOne
+ 00000174  8B 1C 96			JMP   _magical
+ 00000177  3B C3		_addOne:
+ 00000179  7F 02			INC   EBX 
+ 0000017B  EB 0B		_magical: 
+					ADD   ESI, 4
+ 0000017D				LOOP  _LoopCount
+					JMP   _recordCounter
+ 0000017D  50
+ 0000017E  53			_recordCounter:
+ 0000017F  52				MOV   [EDI], EBX         ; adds new count to countArray
+ 00000180  56				MOV   ESI, [EBP + 28]    ; randomArray
+ 00000181  E8 0000000E			ADD   EDI, 4 
+ 00000186  EB 00			INC   EAX
+					MOV   ECX, [EBP + 20]    ; ARRAYSIZE
+ 00000188				MOV   EBX, 0 
+ 00000188  E2 E6			CMP   EAX, [EBP + 8]
+ 0000018A  59				JLE   _LoopCount
+ 0000018B  83 F9 02
+ 0000018E  7D D9			POP   EBP 
+ 00000190  5D				RET   24
+ 00000191  C2 0008
+				countList ENDP
+ 00000194
 				; ---------------------------------------------------------------------------------
 				; Name: farewell
 				;
@@ -577,20 +436,187 @@ Microsoft (R) Macro Assembler Version 14.28.29335.0	    02/28/21 19:15:09
 				; Receives:  
 				;     [ebp+8] = prompt_5
 				; ---------------------------------------------------------------------------------
- 00000255			farewell PROC
- 00000255  55				PUSH  EBP
- 00000256  8B EC			MOV   EBP, ESP
+				farewell PROC
+					PUSH  EBP
+					MOV   EBP, ESP
 
- 00000258  8B 55 08			MOV   EDX, [EBP + 8]
- 0000025B  E8 00000000 E		CALL  WriteString
- 00000260  E8 00000000 E		CALL  CrLf
+					MOV   EDX, [EBP + 8]
+					CALL  WriteString
+					CALL  CrLf
 
- 00000265  5D				POP   EBP 
- 00000266  C2 0004			RET   4
- 00000269			farewell ENDP
+					POP   EBP 
+					RET   4
+ 00000194			farewell ENDP
+ 00000194  55
+ 00000195  8B EC		END main er than the number to it's right, and swaps them
+				;
+ 00000197  8B 75 08		; Preconditions: the array is type DWORD.
+ 0000019A  8B 55 0C		;
+ 0000019D  8B 5D 10		; Postconditions: changes registers EAX, EBX, EDX, ESI
+ 000001A0  8B 45 14		;                 
+ 000001A3  89 04 96		; Receives: parameters: 
+ 000001A6  4A			;     [EBP + 8]   =   array
+ 000001A7  89 1C 96		;     [EBP + 12]  =   position of value in the array
+ 000001AA  42			;     [EBP + 16]  =   larger number
+				;     [EBP + 16]  =   smaller number
+ 000001AB  5D			;           
+ 000001AC  C2 0010		; returns: 
+ 000001AF			; ---------------------------------------------------------------------------------
+				exchangeElements PROC
+					PUSH  EBP
+					MOV   EBP, ESP
 
-				END main
-Microsoft (R) Macro Assembler Version 14.28.29335.0	    02/28/21 19:15:09
+					MOV   ESI, [EBP + 8]
+					MOV   EDX, [EBP + 12]
+					MOV   EBX, [EBP + 16]
+					MOV   EAX, [EBP + 20]
+					MOV   [ESI+EDX*4], EAX
+					DEC   EDX
+					MOV   [ESI+EDX*4], EBX 
+					INC   EDX
+
+					POP   EBP 
+					RET   16
+				exchangeElements ENDP
+
+				; ---------------------------------------------------------------------------------
+				; Name: 
+ 000001AF			;
+ 000001AF  55			; Description HERE 
+ 000001B0  8B EC		;
+				; Preconditions: the array is type DWORD.
+				;
+ 000001B2  8B 55 0C		; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+ 000001B5  E8 00000000 E	;                 
+				;
+				; Receives: parameters: 
+				;     [EBP + 8]   =   size of array
+ 000001BA  8B 45 10		;     [EBP + 12]  =   array
+ 000001BD  BA 00000000		;     [EBP + 16]  =   display message regarding the array
+ 000001C2  BB 00000002		;           
+ 000001C7  F7 F3		;
+ 000001C9  83 FA 00		; returns: 
+ 000001CC  74 02		; ---------------------------------------------------------------------------------
+ 000001CE  EB 26		displayMedian PROC
+ 000001D0				PUSH  EBP
+					MOV   EBP, ESP
+ 000001D0  8B D0
+ 000001D2  4A				; Display text regarding median 
+ 000001D3  8B 04 96			MOV   EDX, [EBP + 12]
+ 000001D6  42				CALL  WriteString
+ 000001D7  8B 1C 96
+ 000001DA  3B C3			; Determin if the size of the array is even or odd
+ 000001DC  74 1D			; By dividing the array size by 2 and looking if there is a remainder
+					MOV   EAX, [EBP + 16]                  ; ARRAYSIZE
+					MOV   EDX, 0
+ 000001DE  03 C3		    MOV   EBX, 2
+ 000001E0  BA 00000000			DIV   EBX 
+ 000001E5  BB 00000002			CMP   EDX, 0 
+ 000001EA  F7 F3			JE    _isEven
+ 000001EC  83 FA 00			JMP   _isOdd
+ 000001EF  75 02		_isEven: 
+ 000001F1  EB 08			; Check to see if middle 2 values are the same
+ 000001F3				MOV   EDX, EAX 
+ 000001F3  40				DEC   EDX
+ 000001F4  EB 05			MOV   EAX, [ESI+EDX*4]
+					INC   EDX
+ 000001F6				MOV   EBX, [ESI+EDX*4]
+ 000001F6  8B D0			CMP   EAX, EBX
+ 000001F8  8B 04 96			JE    _displayResults
+
+ 000001FB				; Add the middle 2 arrays and divide by 2
+ 000001FB  E8 00000000 E		ADD   EAX, EBX 
+ 00000200  E8 00000000 E		MOV   EDX, 0 
+ 00000205  E8 00000000 E		MOV   EBX, 2
+ 0000020A  5D				DIV   EBX 
+ 0000020B  C2 000C			CMP   EDX, 0
+					JNE   _roundUp
+ 0000020E				JMP   _displayResults
+				_roundUp: 
+					INC   EAX 
+					JMP   _displayResults
+
+				_isOdd: 
+					MOV   EDX, EAX
+					MOV   EAX, [ESI+EDX*4]
+
+				_displayResults: 
+					CALL  WriteDec 
+					CALL  CrLf
+					CALL  CrLf
+					POP   EBP 
+					RET   12
+
+				displayMedian ENDP
+
+				; ---------------------------------------------------------------------------------
+				; Name: 
+ 0000020E			;
+ 0000020E  55			; Description HERE 
+ 0000020F  8B EC		;
+				; Preconditions: the array is type DWORD.
+				;
+ 00000211  8B 5D 0C		; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+ 00000214  8B 45 08		;                 
+ 00000217  2B C3		;
+ 00000219  89 45 10		; Receives: parameters: 
+				;     [EBP + 8]   =   size of array
+				;     [EBP + 12]  =   array
+ 0000021C  8B 75 1C		;     [EBP + 16]  =   display message regarding the array
+ 0000021F  8B 7D 18		;           
+ 00000222  8B 45 0C		;
+ 00000225  8B 4D 14		; returns: 
+ 00000228  BB 00000000		; ---------------------------------------------------------------------------------
+				countList PROC
+ 0000022D				PUSH  EBP
+ 0000022D  3B 06			MOV   EBP, ESP
+ 0000022F  74 02
+ 00000231  EB 01			; Update countSize 
+ 00000233				MOV   EBX, [EBP + 12]    ; low
+ 00000233  43				MOV   EAX, [EBP + 8]     ; hi
+ 00000234				SUB   EAX, EBX
+ 00000234  83 C6 04			MOV   [EBP + 16], EAX    ; save countSize
+ 00000237  E2 F4
+ 00000239  EB 00			; Count how many of each number there are
+					MOV   ESI, [EBP + 28]    ; randomArray
+ 0000023B				MOV   EDI, [EBP + 24]    ; countArray
+ 0000023B  89 1F			MOV   EAX, [EBP + 12]    ; lo 
+ 0000023D  8B 75 1C			MOV   ECX, [EBP + 20]    ; ARRAYSIZE
+ 00000240  83 C7 04			MOV   EBX, 0             ; occurance counter 
+ 00000243  40
+ 00000244  8B 4D 14		_LoopCount:  
+ 00000247  BB 00000000			CMP   EAX, [ESI]
+ 0000024C  3B 45 08			JE    _addOne
+ 0000024F  7E DC			JMP   _magical
+				_addOne:
+ 00000251  5D				INC   EBX 
+ 00000252  C2 0018		_magical: 
+					ADD   ESI, 4
+ 00000255				LOOP  _LoopCount
+					JMP   _recordCounter
+
+				_recordCounter:
+					MOV   [EDI], EBX         ; adds new count to countArray
+					MOV   ESI, [EBP + 28]    ; randomArray
+					ADD   EDI, 4 
+					INC   EAX
+					MOV   ECX, [EBP + 20]    ; ARRAYSIZE
+					MOV   EBX, 0 
+ 00000255				CMP   EAX, [EBP + 8]
+ 00000255  55				JLE   _LoopCount
+ 00000256  8B EC
+					POP   EBP 
+ 00000258  8B 55 08			RET   24
+ 0000025B  E8 00000000 E
+ 00000260  E8 00000000 E	countList ENDP
+
+ 00000265  5D			; ---------------------------------------------------------------------------------
+ 00000266  C2 0004		; Name: farewell
+ 00000269			;
+				; Say goodbye by displaying a parting message 
+				;
+				; Receives:  
+Microsoft (R) Macro Assembler Version 14.28.29335.0	    02/28/21 19:48:02
 <Generating Sorting Counting Random Integers    (RandomInteg  Symbols 2 - 1
 
 
@@ -684,7 +710,7 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 000006B5 Para	  Public  'DATA'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 000006B6 Para	  Public  'DATA'	
 _TEXT  . . . . . . . . . . . . .	32 Bit	 00000269 Para	  Public  'CODE'	
 
 
@@ -1043,8 +1069,8 @@ WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
 black  . . . . . . . . . . . . .	Number	 00000000h   
 blue . . . . . . . . . . . . . .	Number	 00000001h   
 brown  . . . . . . . . . . . . .	Number	 00000006h   
-countArray . . . . . . . . . . .	DWord	 00000551 _DATA	
-countSize  . . . . . . . . . . .	DWord	 0000054D _DATA	
+countArray . . . . . . . . . . .	DWord	 00000552 _DATA	
+countSize  . . . . . . . . . . .	DWord	 0000054E _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   

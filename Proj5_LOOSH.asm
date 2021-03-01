@@ -5,7 +5,11 @@ TITLE Generating Sorting Counting Random Integers    (RandomIntegers.asm)
 ; OSU email address: LOOSH@oregonstate.edu
 ; Course number/section:   CS271 Section 400
 ; Project Number: Project 5       Due Date:  February 28, 2021
-; Description:
+; Description: This program generates a list of random numbers in a specific range and displays it.
+;              It sorts the array in ascending order and displays the sorted array. 
+;              It calculates the median of the array and displays the results. 
+;              It calculates and displays instances of each generated number.
+;              Greets, displays message of what the program does and says goodbye to the user. 
 
 
 INCLUDE Irvine32.inc
@@ -31,7 +35,7 @@ INCLUDE Irvine32.inc
 	randomArray     DWORD  ARRAYSIZE DUP(?) 
 	prompt_3	 	BYTE   "The median value of the array: ", 0
 	prompt_4	 	BYTE   "Your list of instances of each generated number:", 0
-	prompt_5   	 	BYTE   "Goodbye, and thanks for using this program!", 0
+	prompt_5   	 	BYTE   "Farewell, and thanks for using this program!", 0
 	countSize       DWORD  ?
 	countArray      DWORD  COUNTINSTANCES DUP(?) 
 
@@ -115,7 +119,7 @@ main ENDP
 ;
 ; Postconditions: changes registers EDX
 ;                 
-; Receives: 
+; Receives: parameters: 
 ;     [EBP + 12] =  intro_1    
 ;     [EBP + 8]  =  intro_2
 ;
@@ -144,29 +148,33 @@ introduction PROC
 introduction ENDP
 
 ; ---------------------------------------------------------------------------------
-; Name: 
+; Name: fillArray
 ;
-; Description HERE 
+; Fills given array with (ARRAYSIZE) randomly generated numbers within a speciic range. 
 ;
-; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+; Preconditions: the array is type DWORD.
+;
+; Postconditions: changes registers EAX, EBX, ECX, EDI
 ;                 
-;
-; Receives: 
-;           
-;
-; returns: 
+; Receives: parameters: 
+;     [EBP + 8]   =  randomArray
+;     [EBP + 12]  =  ARRAYSIZE
+;     [EBP + 16]  =  upper range (HI)
+;     [EBP + 20]  =  lower range (LO) 
+; 
+; returns: randomArray with ARRAYSIZE random generated numbers. 
 ; ---------------------------------------------------------------------------------
 fillArray PROC 
 	PUSH  EBP
 	MOV   EBP, ESP
 
 	; generates random number
-	MOV   ECX, [EBP + 12]                  ; ARRAYSIZE
-	MOV   EDI, [EBP + 8]                   ; address of array in EDI 
+	MOV   ECX, [EBP + 12]                  
+	MOV   EDI, [EBP + 8]                   
     CALL  Randomize                        ; Sets seed
 	MOV   EBX, 0 
 _fillLoop: 
-	MOV   EAX, [EBP + 16]                  ; upper range (HI)
+	MOV   EAX, [EBP + 16]                  
 	ADD   EAX, 1
 	CALL  RandomRange 
 	CMP   EAX, [EBP + 20]                  ; checks if generated number is less than LO
@@ -184,17 +192,20 @@ _fillLoop:
 fillArray ENDP 
 
 ; ---------------------------------------------------------------------------------
-; Name: 
+; Name: displayList
 ;
-; Description HERE 
+; Displays a message regarding the given array and the array. 
 ;
-; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+; Preconditions: the array is type DWORD.
+;
+; Postconditions: changes registers EAX, EBX, EDX, ESI
 ;                 
+; Receives: parameters: 
+;     [EBP + 8]   =   size of array
+;     [EBP + 12]  =   array
+;     [EBP + 16]  =   display message regarding the array
 ;
-; Receives: 
-;           
-;
-; returns: 
+; returns: none
 ; ---------------------------------------------------------------------------------
 displayList PROC 
 	PUSH  EBP
@@ -205,8 +216,8 @@ displayList PROC
 	CALL  WriteString
 	CALL  CrLf
 
-	; Displays list 
-	MOV   ESI, [EBP + 12]                  ; randomArray
+	; Displays array
+	MOV   ESI, [EBP + 12]                  
 	MOV   EDX, 1   
 	DEC   EDX 
 	MOV   EBX, 0
@@ -225,7 +236,7 @@ _continue:
 	CALL  WriteChar
 	INC   EBX
     INC   EDX
-	CMP   EDX, [EBP + 8]                   ; ARRAYSIZE
+	CMP   EDX, [EBP + 8]                  
 	JL    _showElement
 	CALL  CrLf
 	CALL  CrLf
@@ -235,37 +246,40 @@ _continue:
 displayList ENDP 
 
 ; ---------------------------------------------------------------------------------
-; Name: 
+; Name: sortList
 ;
-; Description HERE 
+; Sorts the randomly generated array in acending order. 
 ;
-; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+; Preconditions: the array is type DWORD.
+;
+; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI
 ;                 
+; Receives: parameters: 
+;     [EBP + 8]   =   size of array
+;     [EBP + 12]  =   array  
 ;
-; Receives: 
-;           
-;
-; returns: 
+; returns: sorted array in acending order [EBP + 12](randomArray).
 ; ---------------------------------------------------------------------------------
 sortList PROC
 	PUSH  EBP
 	MOV   EBP, ESP
 
 	; Sort the array
-	MOV   ESI, [EBP + 12]             ; randomArray
-	MOV   ECX, [EBP + 8]              ; ARRAYSIZE
+	MOV   ESI, [EBP + 12]             
+	MOV   ECX, [EBP + 8]              
 	
 _outerLoop:
 	DEC   ECX
-	PUSH  ECX                         ; position
+	PUSH  ECX                              ; position
 	MOV   EDX, 0
   _innerLoop: 
-	MOV   EAX, [ESI+EDX*4]            ; current 
+	MOV   EAX, [ESI+EDX*4]                 ; current 
 	INC   EDX 
-	MOV   EBX, [ESI+EDX*4]            ; next
+	MOV   EBX, [ESI+EDX*4]                 ; next
 	CMP   EAX, EBX 
 	JG    _exchange
 	JMP   _loop
+
   _exchange: 
 	; call exchangeElements
 	PUSH  EAX
@@ -274,6 +288,7 @@ _outerLoop:
 	PUSH  ESI
 	CALL  exchangeElements
 	JMP   _loop
+
   _loop: 
 	LOOP  _innerLoop
 	POP   ECX  
@@ -285,17 +300,21 @@ _outerLoop:
 sortList ENDP
 
 ; ---------------------------------------------------------------------------------
-; Name: 
+; Name: exchangeElements
 ;
-; Description HERE 
+; Called when a number is greater than the number to it's right, and swaps them
 ;
-; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+; Preconditions: the array is type DWORD.
+;
+; Postconditions: changes registers EAX, EBX, EDX, ESI
 ;                 
-;
-; Receives: 
+; Receives: parameters: 
+;     [EBP + 8]   =   array
+;     [EBP + 12]  =   position of value in the array
+;     [EBP + 16]  =   smaller number
+;     [EBP + 20]  =   larger number
 ;           
-;
-; returns: 
+; returns: exchanged given values. Larger number will be on the right. 
 ; ---------------------------------------------------------------------------------
 exchangeElements PROC
 	PUSH  EBP
@@ -315,17 +334,20 @@ exchangeElements PROC
 exchangeElements ENDP
 
 ; ---------------------------------------------------------------------------------
-; Name: 
+; Name: displayMedian
 ;
-; Description HERE 
+; Calculates and displays the median of the given array.
 ;
-; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+; Preconditions: the array is type DWORD.
+;
+; Postconditions: changes registers EAX, EBX, EDX, ESI
 ;                 
-;
-; Receives: 
+; Receives: parameters: 
+;     [EBP + 8]   =   array
+;     [EBP + 12]  =   display message regarding median
+;     [EBP + 16]  =   size of given array
 ;           
-;
-; returns: 
+; returns: none
 ; ---------------------------------------------------------------------------------
 displayMedian PROC
 	PUSH  EBP
@@ -337,7 +359,7 @@ displayMedian PROC
 
 	; Determin if the size of the array is even or odd
 	; By dividing the array size by 2 and looking if there is a remainder
-	MOV   EAX, [EBP + 16]                  ; ARRAYSIZE
+	MOV   EAX, [EBP + 16]                 
 	MOV   EDX, 0
     MOV   EBX, 2
 	DIV   EBX 
@@ -380,52 +402,60 @@ _displayResults:
 displayMedian ENDP
 
 ; ---------------------------------------------------------------------------------
-; Name: 
+; Name: countList
 ;
-; Description HERE 
+; Calculates instances of each generated number.
 ;
-; Postconditions: changes registers EAX, EBX, ECX, EDX, ESI, EDI
+; Preconditions: the array is type DWORD.
+;
+; Postconditions: changes registers EAX, EBX, ECX, ESI, EDI
 ;                 
-;
-; Receives: 
+; Receives: parameters: 
+;     [EBP + 8]   =   HI
+;     [EBP + 12]  =   LO
+;     [EBP + 16]  =   countSize = HI - LO
+;     [EBP + 20]  =   size of array
+;     [EBP + 24]  =   countArray, adds instances of each generated number
+;     [EBP + 28]  =   array
 ;           
-;
-; returns: 
+; returns: updated countSize[EBP + 16], and countArray with list of instances of each generated number
 ; ---------------------------------------------------------------------------------
 countList PROC
 	PUSH  EBP
 	MOV   EBP, ESP
 
 	; Update countSize 
-	MOV   EBX, [EBP + 12]    ; low
-	MOV   EAX, [EBP + 8]     ; hi
+	MOV   EBX, [EBP + 12]    
+	MOV   EAX, [EBP + 8]     
 	SUB   EAX, EBX
-	MOV   [EBP + 16], EAX    ; save countSize
+	MOV   [EBP + 16], EAX    
 
 	; Count how many of each number there are
-	MOV   ESI, [EBP + 28]    ; randomArray
-	MOV   EDI, [EBP + 24]    ; countArray
-	MOV   EAX, [EBP + 12]    ; lo 
-	MOV   ECX, [EBP + 20]    ; ARRAYSIZE
-	MOV   EBX, 0             ; occurance counter 
+	MOV   ESI, [EBP + 28]    
+	MOV   EDI, [EBP + 24]    
+	MOV   EAX, [EBP + 12]    
+	MOV   ECX, [EBP + 20]    
+	MOV   EBX, 0             
 
 _LoopCount:  
 	CMP   EAX, [ESI]
 	JE    _addOne
-	JMP   _magical
+	JMP   _continue
 _addOne:
+	; adds when the number is in the array
 	INC   EBX 
-_magical: 
+_continue: 
 	ADD   ESI, 4
 	LOOP  _LoopCount
 	JMP   _recordCounter
 
 _recordCounter:
-	MOV   [EDI], EBX         ; adds new count to countArray
-	MOV   ESI, [EBP + 28]    ; randomArray
+	; adds new count to countArray
+	MOV   [EDI], EBX                       
+	MOV   ESI, [EBP + 28]    
 	ADD   EDI, 4 
 	INC   EAX
-	MOV   ECX, [EBP + 20]    ; ARRAYSIZE
+	MOV   ECX, [EBP + 20]    
 	MOV   EBX, 0 
 	CMP   EAX, [EBP + 8]
 	JLE   _LoopCount
