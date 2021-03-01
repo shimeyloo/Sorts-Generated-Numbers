@@ -13,9 +13,10 @@ INCLUDE Irvine32.inc
 ; (insert macro definitions here)
 
     ; constant values
-	LO = 10
-	HI = 99
-	ARRAYSIZE = 200
+	LO = 1
+	HI = 5
+	ARRAYSIZE = 5
+	COUNTARRAYSIZE = HI - LO + 1
 
 
 .data
@@ -29,7 +30,9 @@ INCLUDE Irvine32.inc
 	prompt_2	 	BYTE   "Your sorted random numbers:", 0
 	randomArray     DWORD  ARRAYSIZE DUP(?) 
 	prompt_3	 	BYTE   "The median value of the array: ", 0
-
+	prompt_4	 	BYTE   "Your list of instances of each generated number:", 0
+	countSize       DWORD  ?
+	countArray      DWORD  (HI - LO) DUP(?) 
 
 
 .code
@@ -64,13 +67,26 @@ main PROC
 	PUSH  OFFSET randomArray
 	CALL  displayMedian
 
-	; Calls displaySortedList
+	; Calls displayList, displays sorted numbers
 	PUSH  OFFSET prompt_2
 	PUSH  OFFSET randomArray
 	PUSH  OFFSET ARRAYSIZE
 	CALL  displayList
 
-	
+	; Calls countList
+	PUSH  OFFSET randomArray
+	PUSH  OFFSET countArray
+	PUSH  OFFSET ARRAYSIZE
+	PUSH  OFFSET countSize
+	PUSH  OFFSET LO
+	PUSH  OFFSET HI
+	CALL  countList
+
+	; Calls displayList, displays instances of each generated number
+	PUSH  OFFSET prompt_4
+	PUSH  OFFSET countArray
+	PUSH  OFFSET COUNTARRAYSIZE
+	CALL  displayList
 
 	Invoke ExitProcess,0	               ; exit to operating system
 main ENDP
@@ -104,7 +120,7 @@ fillArray PROC
 	; generates random number
 	MOV   ECX, [EBP + 12]                  ; ARRAYSIZE
 	MOV   EDI, [EBP + 8]                   ; address of array in EDI 
-    CALL  Randomize                        ; Sets seed
+    ;CALL  Randomize                        ; Sets seed
 	MOV   EBX, 0 
 _fillLoop: 
 	MOV   EAX, [EBP + 16]                  ; upper range (HI)
@@ -128,14 +144,14 @@ displayList PROC
 	PUSH  EBP
 	MOV   EBP, ESP
 
-	; Display text regarding random unsorted list
+	; Display text regarding list
 	MOV   EDX, [EBP + 16]
 	CALL  WriteString
 	CALL  CrLf
 
-	; Displays random unsorted list
-	MOV   EDX, 1                   
+	; Displays list 
 	MOV   ESI, [EBP + 12]                  ; randomArray
+	MOV   EDX, 1   
 	DEC   EDX 
 	MOV   EBX, 0
 _showElement:
@@ -181,13 +197,15 @@ _outerLoop:
 	INC   EDX 
 	MOV   EBX, [ESI+EDX*4]            ; current 
 	CMP   EAX, EBX 
-	JG    _swap
+	JG    _exchange
 	JMP   _loop
-  _swap: 
-	MOV   [ESI+EDX*4], EAX
-	DEC   EDX
-	MOV   [ESI+EDX*4], EBX 
-	INC   EDX
+  _exchange: 
+	; call exchangeElements
+	PUSH  EAX
+	PUSH  EBX
+	PUSH  EDX 
+	PUSH  ESI
+	CALL  exchangeElements
 	JMP   _loop
   _loop: 
 	LOOP  _innerLoop
@@ -198,6 +216,23 @@ _outerLoop:
 	RET   8
 
 sortList ENDP
+
+exchangeElements PROC
+	PUSH  EBP
+	MOV   EBP, ESP
+
+	MOV   ESI, [EBP + 8]
+	MOV   EDX, [EBP + 12]
+	MOV   EBX, [EBP + 16]
+	MOV   EAX, [EBP + 20]
+	MOV   [ESI+EDX*4], EAX
+	DEC   EDX
+	MOV   [ESI+EDX*4], EBX 
+	INC   EDX
+
+	POP   EBP 
+	RET   16
+exchangeElements ENDP
 
 displayMedian PROC
 	PUSH  EBP
@@ -247,6 +282,99 @@ _displayResults:
 
 displayMedian ENDP
 
+countList PROC
+	PUSH  EBP
+	MOV   EBP, ESP
 
+	; Update countSize 
+	MOV   EBX, [EBP + 12]    ; low
+	MOV   EAX, [EBP + 8]     ; hi
+	SUB   EAX, EBX
+	MOV   [EBP + 16], EAX    ; save countSize
+
+	; Count how many of each number there are
+	MOV   ESI, [EBP + 28]    ; randomArray
+	MOV   EDI, [EBP + 24]    ; countArray
+	MOV   EAX, [EBP + 12]    ; lo 
+	MOV   ECX, [EBP + 20]    ; ARRAYSIZE
+	MOV   EBX, 0             ; occurance counter 
+
+_LoopCount:  
+	CMP   EAX, [ESI]
+	JE    _addOne
+	JMP   _magical
+_addOne:
+	INC   EBX 
+_magical: 
+	ADD   ESI, 4
+	LOOP  _LoopCount
+	JMP   _recordCounter
+
+_recordCounter:
+	MOV   [EDI], EBX         ; adds new count to countArray
+	MOV   ESI, [EBP + 28]    ; randomArray
+	ADD   EDI, 4 
+	INC   EAX
+	MOV   ECX, [EBP + 20]    ; ARRAYSIZE
+	MOV   EBX, 0 
+	CMP   EAX, [EBP + 8]
+	JLE   _LoopCount
+
+	POP   EBP 
+	RET   24
+
+countList ENDP
+
+countListPRAC PROC
+	PUSH  EBP
+	MOV   EBP, ESP
+
+	; Update countSize 
+	MOV   EBX, [EBP + 12]    ; low
+	MOV   EAX, [EBP + 8]     ; hi
+	SUB   EAX, EBX
+	MOV   [EBP + 16], EAX    ; save countSize
+
+	; Count how many of each number there are
+	MOV   ESI, [EBP + 28]    ; randomArray
+	MOV   EDI, [EBP + 24]    ; countArray
+	MOV   EDX, 0             ; position
+
+_outerLoopCount: 
+	MOV   ECX, 1
+
+_innerLoopCount: 
+	MOV   EAX, [ESI+EDX*4]   ; current
+	INC   EDX
+	
+	; checks if it is the end
+	PUSH  ECX                
+	MOV   ECX, [EBP + 20]    ; ARRAYSIZE
+	CMP   ECX, EDX 
+	POP   ECX
+	JLE   _end 
+	JMP   _notEnd
+
+_notEnd: 
+; check if the next value is same/different from current value
+	MOV   EBX, [ESI+EDX*4]   ; next
+	CMP   EAX, EBX 
+	JE    _same
+	JMP   _different
+_same:
+	INC   ECX
+	JMP   _innerLoopCount
+
+_different: 
+	MOV   [EDI], ECX         ; adds new count to countArray
+	ADD   EDI, 4 
+	JMP   _outerLoopCount
+	
+_end: 
+	MOV   [EDI], ECX         ; adds last count to countArray
+	POP   EBP 
+	RET   
+
+countListPRAC ENDP
 
 END main
